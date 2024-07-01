@@ -1,0 +1,157 @@
+[gd_scene load_steps=9 format=4 uid="uid://cqhw276realc"]
+
+[ext_resource type="Material" path="res://addons/godot-xr-tools/materials/pointer.tres" id="1"]
+[ext_resource type="Script" path="res://addons/godot-xr-tools/functions/function_pointer.gd" id="2"]
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_67pgb"]
+_surfaces = [{
+"aabb": AABB(-0.002, 0, -0.00173205, 0.004, 2.00201, 0.0034641),
+"format": 34359742465,
+"index_count": 72,
+"index_data": PackedByteArray("AAABAAIAAAACAAMAAAADAAQAAAAEAAUAAAAFAAYAAAAGAAEADQAHAAgADQAIAAkADQAJAAoADQAKAAsADQALAAwADQAMAAcADAALAAIACwAKAAIACgADAAIAAwAKAAkAAwAJAAQACQAIAAQABAAIAAUACAAHAAUABQAHAAYABgAHAAwABgAMAAEAAQAMAAIA"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 14,
+"vertex_data": PackedByteArray("AAAAAMUgAEAAAAAAbxKDOgAAAED7BeM6bxKDugAAAED7BeM6bxIDuwAAAEB1k5AgbxKDugAAAED7BeO6bxKDOgAAAED7BeO6bxIDOwAAAEB1kxChbxIDOwAAAAB1kxChbxKDOgAAAAD7BeO6bxKDugAAAAD7BeO6bxIDuwAAAAB1k5AgbxKDugAAAAD7BeM6bxKDOgAAAAD7BeM6AAAAAAAAAAAAAAAA")
+}]
+
+[sub_resource type="GDScript" id="GDScript_all4y"]
+script/source = "@tool
+extends MeshInstance3D
+#@export var excute_button: bool = false: set = _run
+
+@export var height = float(0)#: set = _run
+@export var radius = 0.002
+@export var top_height = 0.5
+@export var num_edges = 6
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	_run(2)
+
+ 
+func _run(height):
+	var arr_mesh = ArrayMesh.new()
+	var vertices := PackedVector3Array([
+	Vector3(0,top_height + height, 0),       # 0: Top center vertex
+	Vector3(radius * cos(1 * TAU / num_edges),height,radius * sin(1 * TAU / num_edges)),	# 1: Top edge vertex
+	Vector3(radius * cos(2 * TAU / num_edges),height,radius * sin(2 * TAU / num_edges)),	# 2: Top edge vertex
+	Vector3(radius * cos(3 * TAU / num_edges),height,radius * sin(3 * TAU / num_edges)),	# 3: Top edge vertex
+	Vector3(radius * cos(4 * TAU / num_edges),height,radius * sin(4 * TAU / num_edges)),	# 4: Top edge vertex
+	Vector3(radius * cos(5 * TAU / num_edges),height,radius * sin(5 * TAU / num_edges)),	# 5: Top edge vertex
+	Vector3(radius * cos(6 * TAU / num_edges),height,radius * sin(6 * TAU / num_edges)),	# 6: Top edge vertex
+	
+	
+	Vector3(radius * cos(6 * TAU / num_edges),0,radius * sin(6 * TAU / num_edges)),# 7: Bottom edge vertex
+	Vector3(radius * cos(5 * TAU / num_edges),0,radius * sin(5 * TAU / num_edges)),# 8: Bottom edge vertex
+	Vector3(radius * cos(4 * TAU / num_edges),0,radius * sin(4 * TAU / num_edges)),# 9: Bottom edge vertex
+	Vector3(radius * cos(3 * TAU / num_edges),0,radius * sin(3 * TAU / num_edges)),# 10: Bottom edge vertex
+	Vector3(radius * cos(2 * TAU / num_edges),0,radius * sin(2 * TAU / num_edges)),# 11: Bottom edge vertex
+	Vector3(radius * cos(1 * TAU / num_edges),0,radius * sin(1 * TAU / num_edges)),# 12: Bottom edge vertex
+	Vector3(0, 0, 0)# 13: Bottom center vertex
+])
+	var indices := PackedInt32Array([
+		# Top face
+		0, 1, 2,
+		0, 2, 3,
+		0, 3, 4,
+		0, 4, 5,
+		0, 5, 6,
+		0, 6, 1,
+		
+		# Bottom face
+		13, 7, 8,
+		13, 8, 9,
+		13, 9, 10,
+		13, 10, 11,
+		13, 11, 12,
+		13, 12, 7,
+		
+		# Sides
+		12,11,2,
+		11,10,2,
+		10,3,2,
+		3,10,9,
+		3,9,4,
+		9,8,4,
+		4,8,5,
+		8,7,5,
+		5,7,6,
+		6,7,12,
+		6,12,1,
+		1,12,2
+	])
+	
+	# Initialize the ArrayMesh.
+	var arrays = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_INDEX] = indices
+	
+	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	mesh = arr_mesh
+"
+
+[sub_resource type="BoxMesh" id="1"]
+resource_local_to_scene = true
+material = ExtResource("1")
+size = Vector3(0.002, 0.002, 10)
+subdivide_depth = 20
+
+[sub_resource type="GDScript" id="GDScript_n87c3"]
+script/source = "extends MeshInstance3D
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	pass
+	#print(mesh.size.z)
+"
+
+[sub_resource type="SphereMesh" id="2"]
+material = ExtResource("1")
+radius = 0.002
+height = 0.004
+radial_segments = 16
+rings = 8
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_k3gfm"]
+radius = 0.2
+
+[node name="FunctionPointer" type="Node3D"]
+script = ExtResource("2")
+laser_length = 1
+
+[node name="Laser3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, -0.013, 0)
+mesh = SubResource("ArrayMesh_67pgb")
+script = SubResource("GDScript_all4y")
+height = 5.175
+top_height = 0.002
+
+[node name="RayCast" type="RayCast3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.013, 0)
+target_position = Vector3(0, 0, 0)
+collision_mask = 5242880
+
+[node name="Laser" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.013, -5)
+visible = false
+cast_shadow = 0
+mesh = SubResource("1")
+script = SubResource("GDScript_n87c3")
+
+[node name="Target" type="MeshInstance3D" parent="."]
+visible = false
+mesh = SubResource("2")
+
+[node name="SuppressArea" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 4194304
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SuppressArea"]
+shape = SubResource("SphereShape3D_k3gfm")

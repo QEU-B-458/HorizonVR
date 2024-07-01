@@ -1,0 +1,784 @@
+[gd_scene load_steps=42 format=4 uid="uid://tml2pvx80shf"]
+
+[ext_resource type="PackedScene" uid="uid://idmeprd4bx8w" path="res://addons/phik2/work/saobutton/sao_button.tscn" id="1_apqpr"]
+[ext_resource type="Texture2D" uid="uid://bqyedq3pod7m0" path="res://addons/assets/materials/textures/purple/texture_07.png" id="2_tgjhv"]
+[ext_resource type="PackedScene" uid="uid://b6bk2pj8vbj28" path="res://addons/godot-xr-tools/functions/movement_turn.tscn" id="3_o1ib2"]
+[ext_resource type="Texture2D" uid="uid://cq40xst7koter" path="res://addons/assets/SAO_Icons_v3.300/1_Menu-1/Config_on.svg" id="3_skmex"]
+[ext_resource type="PackedScene" uid="uid://bl2nuu3qhlb5k" path="res://addons/godot-xr-tools/functions/movement_direct.tscn" id="4_f3iai"]
+[ext_resource type="PackedScene" uid="uid://diyu06cw06syv" path="res://addons/godot-xr-tools/player/player_body.tscn" id="5_l5pvh"]
+[ext_resource type="PackedScene" uid="uid://cqhw276realc" path="res://addons/godot-xr-tools/functions/function_pointer.tscn" id="5_s5a1j"]
+[ext_resource type="PackedScene" uid="uid://clujaf3u776a3" path="res://addons/godot-xr-tools/objects/viewport_2d_in_3d.tscn" id="7_nyrov"]
+[ext_resource type="PackedScene" uid="uid://dk3r2xc8u5a1o" path="res://addons/MultiTouchGui/multi_touch_demo.tscn" id="12_n40ba"]
+[ext_resource type="PackedScene" uid="uid://ytsxet2k47lj" path="res://addons/godot-xr-tools/user_settings/user_settings_ui.tscn" id="14_3wkbb"]
+[ext_resource type="Texture2D" uid="uid://bu0koa4nekcfv" path="res://addons/assets/SAO_Icons_v3.300/1_Menu-1/Config.svg" id="14_6junl"]
+[ext_resource type="Script" path="res://addons/godot-xr-tools/player/poke/poke.gd" id="14_a4qhn"]
+[ext_resource type="Script" path="res://addons/godot-xr-tools/player/poke/poke_body.gd" id="15_3uwvt"]
+[ext_resource type="Script" path="res://addons/godot-xr-tools/rumble/rumbler.gd" id="16_tblev"]
+[ext_resource type="Resource" uid="uid://brci6umrcd157" path="res://addons/godot-xr-tools/rumble/tap_rumble.tres" id="17_irhf2"]
+
+[sub_resource type="GDScript" id="GDScript_vh3p4"]
+script/source = "extends main
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	log_help()
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	pass
+"
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_omq5p"]
+
+[sub_resource type="Sky" id="Sky_63iih"]
+sky_material = SubResource("ProceduralSkyMaterial_omq5p")
+
+[sub_resource type="Environment" id="Environment_nrtu6"]
+background_mode = 2
+background_energy_multiplier = 1.51
+sky = SubResource("Sky_63iih")
+ambient_light_source = 3
+ambient_light_color = Color(0.91664, 0.91664, 0.91664, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ie5as"]
+size = Vector3(42, 42, 0.001)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_px1eb"]
+vertex_color_is_srgb = true
+albedo_color = Color(0.683077, 0.683077, 0.683077, 1)
+albedo_texture = ExtResource("2_tgjhv")
+uv1_triplanar = true
+uv1_world_triplanar = true
+texture_filter = 5
+
+[sub_resource type="QuadMesh" id="QuadMesh_2sen0"]
+material = SubResource("StandardMaterial3D_px1eb")
+size = Vector2(42, 42)
+
+[sub_resource type="GDScript" id="GDScript_wbbmv"]
+resource_name = "vrstart"
+script/source = "extends Node3D
+
+var xr_interface: XRInterface
+@onready var test = $\"..\"
+
+func _ready():
+	test.name
+	xr_interface = XRServer.find_interface(\"OpenXR\")
+	if xr_interface.is_initialized():
+		print(\"OpenXR initialized successfully\")
+		## Turn off v-sync!
+		#DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+#
+		## Change our main viewport to output to the HMD
+		#get_viewport().use_xr = true
+	#else:
+		#print(\"OpenXR not initialized, please check if your headset is connected\")
+"
+
+[sub_resource type="GDScript" id="GDScript_epgtg"]
+resource_name = "camera"
+script/source = "extends XROrigin3D
+
+@onready var cam1 = $Camera3D
+@onready var cam2 = $XRCamera3D
+var is_function_a_active: bool = true
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	pass # Replace with function body.
+
+func toggle():
+	if is_function_a_active:
+		function_a()
+	else:
+		function_b()
+
+func function_a():
+	cam2.make_current()
+	get_viewport().use_xr = true
+	print(\"a\")
+
+func function_b():
+	cam1.make_current()
+	get_viewport().use_xr = false
+	print(\"b\")
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	if Input.is_action_just_pressed(\"cam_switch\"):
+		is_function_a_active = !is_function_a_active
+		toggle()
+"
+
+[sub_resource type="BoxMesh" id="BoxMesh_asdf1"]
+size = Vector3(0.042, 0.042, 0.35)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r0gfo"]
+albedo_color = Color(0.579254, 1.97336e-06, 3.85046e-07, 1)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_g1sig"]
+resource_local_to_scene = true
+radius = 0.005
+
+[sub_resource type="SphereMesh" id="SphereMesh_clk8w"]
+resource_local_to_scene = true
+radius = 0.005
+height = 0.01
+radial_segments = 32
+rings = 16
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1dcta"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.8, 0.8, 1, 0.5)
+
+[sub_resource type="GDScript" id="GDScript_2rbgm"]
+script/source = "## an approach to getting the raw hand tracking data by procedurally setting up
+## a hand and moving all the added children to the position their name 
+## corresponds to
+extends Node3D
+
+## hand sidedness: 0=left || 1=right
+@export var hand:int = 0
+#hold a reference to the xr interface for easy access
+var interface:OpenXRInterface
+#track the last position and rotation of the of each joint for gesture detection
+var joint_positions:Array[Vector3]
+var joint_rotations:Array[Vector3]
+var joints:Array[Node3D]
+
+#preload the ui sound
+var ui_boop = preload(\"res://addons/phik2/work/handtracking/ui boop.ogg\")
+
+func _ready():
+	joint_positions.resize(26)
+	joint_rotations.resize(26)
+	joints.resize(26)
+
+var index_pointing := false
+var index_cumulative_angle : float = 0.0
+var index_closedness : float = 0.0
+var middle_pointing := false
+var middle_cumulative_angle : float = 0.0
+var middle_closedness : float = 0.0
+var ring_pointing := false
+var ring_cumulative_angle : float = 0.0
+var ring_closedness : float = 0.0
+var little_pointing := false
+var little_cumulative_angle : float = 0.0
+var little_closedness : float = 0.0
+var thumb_pointing := false
+var thumb_cumulative_angle : float = 0.0
+var thumb_closedness : float = 0.0
+
+var finger_activation_distance:float=40.0
+
+func _physics_process(delta):
+	if joints[OpenXRInterface.HAND_JOINT_INDEX_INTERMEDIATE] and joints[OpenXRInterface.HAND_JOINT_INDEX_METACARPAL]:
+		index_closedness = joints[OpenXRInterface.HAND_JOINT_INDEX_METACARPAL].quaternion.dot(joints[OpenXRInterface.HAND_JOINT_INDEX_INTERMEDIATE].quaternion)
+	if joints[OpenXRInterface.HAND_JOINT_MIDDLE_INTERMEDIATE] and joints[OpenXRInterface.HAND_JOINT_MIDDLE_METACARPAL]:
+		middle_closedness = joints[OpenXRInterface.HAND_JOINT_MIDDLE_METACARPAL].quaternion.dot(joints[OpenXRInterface.HAND_JOINT_MIDDLE_INTERMEDIATE].quaternion)
+	if joints[OpenXRInterface.HAND_JOINT_RING_INTERMEDIATE] and joints[OpenXRInterface.HAND_JOINT_RING_METACARPAL]:
+		ring_closedness = joints[OpenXRInterface.HAND_JOINT_RING_METACARPAL].quaternion.dot(joints[OpenXRInterface.HAND_JOINT_RING_INTERMEDIATE].quaternion)
+	if joints[OpenXRInterface.HAND_JOINT_LITTLE_INTERMEDIATE] and joints[OpenXRInterface.HAND_JOINT_LITTLE_METACARPAL]:
+		little_closedness = joints[OpenXRInterface.HAND_JOINT_LITTLE_METACARPAL].quaternion.dot(joints[OpenXRInterface.HAND_JOINT_LITTLE_INTERMEDIATE].quaternion)
+	if joints[OpenXRInterface.HAND_JOINT_THUMB_TIP] and joints[OpenXRInterface.HAND_JOINT_THUMB_METACARPAL]:
+		thumb_closedness = joints[OpenXRInterface.HAND_JOINT_THUMB_METACARPAL].quaternion.dot(joints[OpenXRInterface.HAND_JOINT_THUMB_TIP].quaternion)
+	#check whether hand tracking data is available for the first time 
+	#	if it is, then setup the hand
+	if XRServer.primary_interface is OpenXRInterface and get_child_count(true)==0:
+		interface = XRServer.primary_interface
+		if interface.is_hand_tracking_supported():
+			setup_hand()
+	for child:Node3D in get_children():
+		if \"target\" in child:
+			var num:int=child.name.to_int()
+			if interface.get_hand_joint_flags(hand,num) != 0:
+				child.show()
+				child.collon = true
+				child.scale = Vector3(1,1,1)
+				child.target = interface.get_hand_joint_position(hand,num)
+				child.quaternion = interface.get_hand_joint_rotation(hand,num)
+				joint_positions[num] = child.target
+				joint_rotations[num] = child.rotation_degrees
+				if num == 0:
+					child.find_child(\"label\",true,false).text = \"index: {0}\\nmiddle: {1}\\nring: {2}\\nlittle: {3}\\nthumb: {4}\".format([
+						index_closedness,
+						middle_closedness,
+						ring_closedness,
+						little_closedness,
+						thumb_closedness])
+					if abs(joint_rotations[num].z) > 135.0 and index_cumulative_angle > 90.0:
+						child.visible = true
+					elif child.visible and abs(joint_rotations[num].z) < 100.0:
+						child.visible = false
+			else:
+				child.collon = false
+				child.hide()
+				child.scale = Vector3()
+
+## setup the hand procedurally based on the 26 known hand joints
+func setup_hand():
+	for i in range(26):
+		#instantiate a tracker to place at this joint
+		var tmp:Node3D = load(\"res://addons/phik2/work/handtracking/tracker.tscn\").instantiate()
+		#add the joint to the list of joints for easy access
+		joints[i] = tmp
+		#name the tracker by the int value of the hand joint for correlation
+		tmp.name = str(i)
+		#if left hand, add the left hand collision layer for using ui
+		if hand == 0:
+			tmp.collision_layers += 16
+		#if right hand, add the right hand collision layer for using ui
+		elif hand == 1:
+			tmp.collision_layers += 32
+		#if not a tip joint, remove the sided button activation col layer
+		if i not in [5,10,15,20,25]:
+			tmp.collision_layers = 6
+		add_child(tmp)
+		#if a specific join, do something special
+		match i:
+			#palm joint
+			#palm joint
+			0:
+				var label:Label3D = Label3D.new()
+				label.text = \"TEST\"
+				label.name = \"label\"
+				tmp.add_child(label)
+				label.position.y = -.1
+				label.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
+				label.fixed_size = true
+				label.font_size = 2
+				print(label)
+			#wrist joint - add the wrist menu to the wrist joint
+			##	the wrist menu already has offsets configured in it's scene 
+			##	to position it better, but I might move that offset here so it
+			##	can be offset procedurally for better wrist menu usability
+			1:
+				var tmpbutton = load(\"res://3d ui/wrist/wrist_menu.tscn\").instantiate()
+				tmpbutton.hand = hand
+				#disable collision for this join to prevent weird physics
+				#	behaviors with the button positions
+				tmp.collon = false
+				tmp.add_child(tmpbutton)
+
+func play_sound(pitch_scale: float):
+	pitch_scale = 1.0
+	var tmpaudio = AudioStreamPlayer3D.new()
+	tmpaudio.stream = ui_boop
+	tmpaudio.pitch_scale=pitch_scale
+	add_child(tmpaudio)
+	tmpaudio.finished.connect(tmpaudio.queue_free)
+	tmpaudio.play()
+"
+
+[sub_resource type="GDScript" id="GDScript_7bouk"]
+script/source = "## an approach to getting the raw hand tracking data by procedurally setting up
+## a hand and moving all the added children to the position their name 
+## corresponds to
+extends Node3D
+
+## hand sidedness: 0=left || 1=right
+@export var hand:int = 0
+#hold a reference to the xr interface for easy access
+var interface:OpenXRInterface
+#track the last position and rotation of the of each joint for gesture detection
+var joint_positions:Array[Vector3]
+var joint_rotations:Array[Vector3]
+var joints:Array[Node3D]
+
+#preload the ui sound
+var ui_boop = preload(\"res://addons/phik2/work/handtracking/ui boop.ogg\")
+
+func _ready():
+	joint_positions.resize(26)
+	joint_rotations.resize(26)
+	joints.resize(26)
+
+var index_pointing := false
+var index_cumulative_angle : float = 0.0
+var index_closedness : float = 0.0
+var middle_pointing := false
+var middle_cumulative_angle : float = 0.0
+var middle_closedness : float = 0.0
+var ring_pointing := false
+var ring_cumulative_angle : float = 0.0
+var ring_closedness : float = 0.0
+var little_pointing := false
+var little_cumulative_angle : float = 0.0
+var little_closedness : float = 0.0
+var thumb_pointing := false
+var thumb_cumulative_angle : float = 0.0
+var thumb_closedness : float = 0.0
+
+var finger_activation_distance:float=40.0
+
+func _physics_process(delta):
+	if joints[OpenXRInterface.HAND_JOINT_INDEX_INTERMEDIATE] and joints[OpenXRInterface.HAND_JOINT_INDEX_METACARPAL]:
+		index_closedness = joints[OpenXRInterface.HAND_JOINT_INDEX_METACARPAL].quaternion.dot(joints[OpenXRInterface.HAND_JOINT_INDEX_INTERMEDIATE].quaternion)
+	if joints[OpenXRInterface.HAND_JOINT_MIDDLE_INTERMEDIATE] and joints[OpenXRInterface.HAND_JOINT_MIDDLE_METACARPAL]:
+		middle_closedness = joints[OpenXRInterface.HAND_JOINT_MIDDLE_METACARPAL].quaternion.dot(joints[OpenXRInterface.HAND_JOINT_MIDDLE_INTERMEDIATE].quaternion)
+	if joints[OpenXRInterface.HAND_JOINT_RING_INTERMEDIATE] and joints[OpenXRInterface.HAND_JOINT_RING_METACARPAL]:
+		ring_closedness = joints[OpenXRInterface.HAND_JOINT_RING_METACARPAL].quaternion.dot(joints[OpenXRInterface.HAND_JOINT_RING_INTERMEDIATE].quaternion)
+	if joints[OpenXRInterface.HAND_JOINT_LITTLE_INTERMEDIATE] and joints[OpenXRInterface.HAND_JOINT_LITTLE_METACARPAL]:
+		little_closedness = joints[OpenXRInterface.HAND_JOINT_LITTLE_METACARPAL].quaternion.dot(joints[OpenXRInterface.HAND_JOINT_LITTLE_INTERMEDIATE].quaternion)
+	if joints[OpenXRInterface.HAND_JOINT_THUMB_TIP] and joints[OpenXRInterface.HAND_JOINT_THUMB_METACARPAL]:
+		thumb_closedness = joints[OpenXRInterface.HAND_JOINT_THUMB_METACARPAL].quaternion.dot(joints[OpenXRInterface.HAND_JOINT_THUMB_TIP].quaternion)
+	#check whether hand tracking data is available for the first time 
+	#	if it is, then setup the hand
+	if XRServer.primary_interface is OpenXRInterface and get_child_count(true)==0:
+		interface = XRServer.primary_interface
+		if interface.is_hand_tracking_supported():
+			setup_hand()
+	for child:Node3D in get_children():
+		if \"target\" in child:
+			var num:int=child.name.to_int()
+			if interface.get_hand_joint_flags(hand,num) != 0:
+				child.show()
+				child.collon = true
+				child.scale = Vector3(1,1,1)
+				child.target = interface.get_hand_joint_position(hand,num)
+				child.quaternion = interface.get_hand_joint_rotation(hand,num)
+				joint_positions[num] = child.target
+				joint_rotations[num] = child.rotation_degrees
+				if num == 0:
+					child.find_child(\"label\",true,false).text = \"index: {0}\\nmiddle: {1}\\nring: {2}\\nlittle: {3}\\nthumb: {4}\".format([
+						index_closedness,
+						middle_closedness,
+						ring_closedness,
+						little_closedness,
+						thumb_closedness])
+					if abs(joint_rotations[num].z) > 135.0 and index_cumulative_angle > 90.0:
+						child.visible = true
+					elif child.visible and abs(joint_rotations[num].z) < 100.0:
+						child.visible = false
+			else:
+				child.collon = false
+				child.hide()
+				child.scale = Vector3()
+
+## setup the hand procedurally based on the 26 known hand joints
+func setup_hand():
+	for i in range(26):
+		#instantiate a tracker to place at this joint
+		var tmp:Node3D = load(\"res://addons/phik2/work/handtracking/tracker.tscn\").instantiate()
+		#add the joint to the list of joints for easy access
+		joints[i] = tmp
+		#name the tracker by the int value of the hand joint for correlation
+		tmp.name = str(i)
+		#if left hand, add the left hand collision layer for using ui
+		if hand == 0:
+			tmp.collision_layers += 16
+		#if right hand, add the right hand collision layer for using ui
+		elif hand == 1:
+			tmp.collision_layers += 32
+		#if not a tip joint, remove the sided button activation col layer
+		if i not in [5,10,15,20,25]:
+			tmp.collision_layers = 6
+		add_child(tmp)
+		#if a specific join, do something special
+		match i:
+			#palm joint
+			#palm joint
+			0:
+				var label:Label3D = Label3D.new()
+				label.text = \"TEST\"
+				label.name = \"label\"
+				tmp.add_child(label)
+				label.position.y = -.1
+				label.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
+				label.fixed_size = true
+				label.font_size = 2
+				print(label)
+			#wrist joint - add the wrist menu to the wrist joint
+			#	the wrist menu already has offsets configured in it's scene 
+			#	to position it better, but I might move that offset here so it
+			#	can be offset procedurally for better wrist menu usability
+			1:
+				var tmpbutton = load(\"res://3d ui/wrist/wrist_menu.tscn\").instantiate()
+				tmpbutton.hand = hand
+				#disable collision for this join to prevent weird physics
+				#	behaviors with the button positions
+				tmp.collon = false
+				tmp.add_child(tmpbutton)
+
+func play_sound(pitch_scale:float=1.0):
+	var tmpaudio = AudioStreamPlayer3D.new()
+	tmpaudio.stream = ui_boop
+	tmpaudio.pitch_scale=pitch_scale
+	add_child(tmpaudio)
+	tmpaudio.finished.connect(tmpaudio.queue_free)
+	tmpaudio.play()
+"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bj6vv"]
+cull_mode = 2
+albedo_texture = ExtResource("14_6junl")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_lp7pj"]
+_surfaces = [{
+"aabb": AABB(-0.021, 0, -0.0181865, 0.042, 1e-05, 0.0363731),
+"format": 34359742465,
+"index_count": 18,
+"index_data": PackedByteArray("AAABAAIAAAACAAMAAAADAAQAAAAEAAUAAAAFAAYAAAAGAAEA"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 7,
+"vertex_data": PackedByteArray("AAAAAAAAAAAAAAAAMQgsPAAAAADt+5Q8MQgsvAAAAADt+5Q8MQisvAAAAACJwT0iMQgsvAAAAADt+5S8MQgsPAAAAADt+5S8MQisPAAAAACJwb2i")
+}]
+
+[sub_resource type="GDScript" id="GDScript_ru2kx"]
+script/source = "@tool
+extends MeshInstance3D
+#export var excute_button: bool = false: set = _run
+
+
+var radius = 0.021
+@export var num_edges = 6
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	_run()
+
+ 
+func _run():
+	var arr_mesh = ArrayMesh.new()
+	var vertices := PackedVector3Array([
+	Vector3(0,0,0),       # 0: Top center vertex
+	Vector3(radius * cos(1 * TAU / num_edges),0,radius * sin(1 * TAU / num_edges)),	# 1: Top edge vertex
+	Vector3(radius * cos(2 * TAU / num_edges),0,radius * sin(2 * TAU / num_edges)),	# 2: Top edge vertex
+	Vector3(radius * cos(3 * TAU / num_edges),0,radius * sin(3 * TAU / num_edges)),	# 3: Top edge vertex
+	Vector3(radius * cos(4 * TAU / num_edges),0,radius * sin(4 * TAU / num_edges)),	# 4: Top edge vertex
+	Vector3(radius * cos(5 * TAU / num_edges),0,radius * sin(5 * TAU / num_edges)),	# 5: Top edge vertex
+	Vector3(radius * cos(6 * TAU / num_edges),0,radius * sin(6 * TAU / num_edges)),	# 6: Top edge vertex
+	
+	
+	#Vector3(radiuss * cos(6 * TAU / num_edges),0,radiuss * sin(6 * TAU / num_edges)),# 7: Bottom edge vertex
+	#Vector3(radiuss * cos(5 * TAU / num_edges),0,radiuss * sin(5 * TAU / num_edges)),# 8: Bottom edge vertex
+	#Vector3(radiuss * cos(4 * TAU / num_edges),0,radiuss * sin(4 * TAU / num_edges)),# 9: Bottom edge vertex
+	#Vector3(radiuss * cos(3 * TAU / num_edges),0,radiuss * sin(3 * TAU / num_edges)),# 10: Bottom edge vertex
+	#Vector3(radiuss * cos(2 * TAU / num_edges),0,radiuss * sin(2 * TAU / num_edges)),# 11: Bottom edge vertex
+	#Vector3(radiuss * cos(1 * TAU / num_edges),0,radiuss * sin(1 * TAU / num_edges)),# 12: Bottom edge vertex
+	#Vector3(0, 0, 0)# 13: Bottom center vertex
+])
+	var indices := PackedInt32Array([
+		# Top face
+		0, 1, 2,
+		0, 2, 3,
+		0, 3, 4,
+		0, 4, 5,
+		0, 5, 6,
+		0, 6, 1,
+		
+		# Bottom face
+		#13, 7, 8,
+		#13, 8, 9,
+		#13, 9, 10,
+		#13, 10, 11,
+		#13, 11, 12,
+		#13, 12, 7,
+		
+		# Sides
+		#12,11,2,
+		#11,10,2,
+		#10,3,2,
+		#3,10,9,
+		#3,9,4,
+		#9,8,4,
+		#4,8,5,
+		#8,7,5,
+		#5,7,6,
+		#6,7,12,
+		#6,12,1,
+		#1,12,2
+	])
+	
+	# Initialize the ArrayMesh.
+	var arrays = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_INDEX] = indices
+	
+	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	mesh = arr_mesh
+"
+
+[sub_resource type="GDScript" id="GDScript_wmde1"]
+script/source = "extends Node3D
+
+@onready var button = $button
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	pass
+	
+func button_max_z(button):
+	pass
+"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yoede"]
+cull_mode = 1
+albedo_texture = ExtResource("3_skmex")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_76kq8"]
+_surfaces = [{
+"aabb": AABB(-0.021, 0, -0.0181865, 0.042, 1e-05, 0.0363731),
+"attribute_data": PackedByteArray("AAAAPwAAAD/s2W4/AABAP+zZbj8AAIA+AAAAPwAAAACjMIk9AACAPqMwiT0AAEA/AAAAPwAAgD8="),
+"format": 34359742481,
+"index_count": 18,
+"index_data": PackedByteArray("AAABAAIAAAACAAMAAAADAAQAAAAEAAUAAAAFAAYAAAAGAAEA"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 7,
+"vertex_data": PackedByteArray("AAAAAAAAAAAAAAAAMQgsPAAAAADt+5Q8MQgsvAAAAADt+5Q8MQisvAAAAACJwT0iMQgsvAAAAADt+5S8MQgsPAAAAADt+5S8MQisPAAAAACJwb2i")
+}]
+
+[sub_resource type="GDScript" id="GDScript_2dhkq"]
+script/source = "@tool
+extends MeshInstance3D
+
+
+func _ready():
+	var surface_tool = SurfaceTool.new()
+	surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	
+	# Define the radius of the hexagon
+	var radius = 0.021
+	
+	# Manually define the vertices of the hexagon
+	surface_tool.set_uv(Vector2(0.5, 0.5))# UV 0
+	surface_tool.add_vertex(Vector3(0, 0, 0))#Vertex 0
+	surface_tool.set_uv(Vector2(0.5 + 0.5 * sin( 1 * TAU / 6),0.5 + 0.5 * cos( 1 * TAU / 6)))# UV 1
+	surface_tool.add_vertex(Vector3(radius * cos(1 * TAU / 6),0,radius * sin(1 * TAU / 6))) # Vertex 1
+	surface_tool.set_uv(Vector2(0.5 + 0.5 * sin( 2 * TAU / 6),0.5 + 0.5 * cos( 2 * TAU / 6)))# UV 2
+	surface_tool.add_vertex(Vector3(radius * cos(2 * TAU / 6),0,radius * sin(2 * TAU / 6))) # Vertex 2
+	surface_tool.set_uv(Vector2(0.5 + 0.5 * sin( 3 * TAU / 6),0.5 + 0.5 * cos( 3 * TAU / 6)))# UV3
+	surface_tool.add_vertex(Vector3(radius * cos(3 * TAU / 6),0,radius * sin(3 * TAU / 6)))  # Vertex 3
+	surface_tool.set_uv(Vector2(0.5 + 0.5 * sin( 4 * TAU / 6),0.5 + 0.5 * cos( 4 * TAU / 6)))# UV 4
+	surface_tool.add_vertex(Vector3(radius * cos(4 * TAU / 6),0,radius * sin(4 * TAU / 6)))  # Vertex 4
+	surface_tool.set_uv(Vector2(0.5 + 0.5 * sin( 5 * TAU / 6),0.5 + 0.5 * cos( 5 * TAU / 6)))# UV 5
+	surface_tool.add_vertex(Vector3(radius * cos(5 * TAU / 6),0,radius * sin(5 * TAU / 6)))  # Vertex 5
+	surface_tool.set_uv(Vector2(0.5 + 0.5 * sin( 6 * TAU / 6),0.5 + 0.5 * cos( 6 * TAU / 6)))# UV 6
+	surface_tool.add_vertex(Vector3(radius * cos(6 * TAU / 6),0,radius * sin(6 * TAU / 6)))  # Vertex 6
+	
+	
+	surface_tool.add_index(0)
+	surface_tool.add_index(1)
+	surface_tool.add_index(2)
+	surface_tool.add_index(0)
+	surface_tool.add_index(2)
+	surface_tool.add_index(3)
+	surface_tool.add_index(0)
+	surface_tool.add_index(3)
+	surface_tool.add_index(4)
+	surface_tool.add_index(0)
+	surface_tool.add_index(4)
+	surface_tool.add_index(5)
+	surface_tool.add_index(0)
+	surface_tool.add_index(5)
+	surface_tool.add_index(6)
+	surface_tool.add_index(0)
+	surface_tool.add_index(6)
+	surface_tool.add_index(1)
+	#surface_tool.index()
+
+	# Create the mesh
+	mesh = surface_tool.commit()
+"
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_qefun"]
+height = 0.001
+radius = 0.018
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1r4dh"]
+cull_mode = 1
+albedo_color = Color(0.266575, 0.266575, 0.266575, 1)
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_0jijv"]
+_surfaces = [{
+"aabb": AABB(-0.025, 0, -0.0216506, 0.05, 1e-05, 0.0433013),
+"format": 34359742465,
+"index_count": 36,
+"index_data": PackedByteArray("DAALAAIACwAKAAIACgADAAIAAwAKAAkAAwAJAAQACQAIAAQABAAIAAUACAAHAAUABQAHAAYABgAHAAwABgAMAAEAAQAMAAIA"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 14,
+"vertex_data": PackedByteArray("AAAAAAAAAAAAAAAAf2o8PAAAAABNLKM8f2o8vAAAAABNLKM8f2q8vAAAAAD4008if2o8vAAAAABNLKO8f2o8PAAAAABNLKO8f2q8PAAAAAD408+izczMPAAAAABm5uGizcxMPAAAAACsXLG8zcxMvAAAAACsXLG8zczMvAAAAABm5mEizcxMvAAAAACsXLE8zcxMPAAAAACsXLE8AAAAAAAAAAAAAAAA")
+}]
+
+[node name="main" type="main"]
+script = SubResource("GDScript_vh3p4")
+
+[node name="sky" type="Node" parent="."]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="sky"]
+environment = SubResource("Environment_nrtu6")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="sky"]
+transform = Transform3D(1, 0, 0, 0, -0.218433, 0.975852, 0, -0.975852, -0.218433, 0, 0, 0)
+light_energy = 0.615
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+shape = SubResource("BoxShape3D_ie5as")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("QuadMesh_2sen0")
+skeleton = NodePath("")
+
+[node name="SceneBase" type="Node3D" parent="."]
+script = SubResource("GDScript_wbbmv")
+
+[node name="XROrigin3D" type="XROrigin3D" parent="SceneBase"]
+script = SubResource("GDScript_epgtg")
+
+[node name="XRCamera3D" type="XRCamera3D" parent="SceneBase/XROrigin3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+current = true
+far = 300.0
+
+[node name="Camera3D" type="Camera3D" parent="SceneBase/XROrigin3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+
+[node name="LeftHand" type="XRController3D" parent="SceneBase/XROrigin3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 1, -0.5)
+visible = false
+tracker = &"left_hand"
+pose = &"aim"
+
+[node name="MovementTurn" parent="SceneBase/XROrigin3D/LeftHand" instance=ExtResource("3_o1ib2")]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="SceneBase/XROrigin3D/LeftHand"]
+mesh = SubResource("BoxMesh_asdf1")
+
+[node name="FunctionPointer" parent="SceneBase/XROrigin3D/LeftHand" instance=ExtResource("5_s5a1j")]
+
+[node name="RightHand" type="XRController3D" parent="SceneBase/XROrigin3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 1, -0.5)
+visible = false
+tracker = &"right_hand"
+pose = &"aim"
+
+[node name="MovementDirect" parent="SceneBase/XROrigin3D/RightHand" instance=ExtResource("4_f3iai")]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="SceneBase/XROrigin3D/RightHand"]
+mesh = SubResource("BoxMesh_asdf1")
+
+[node name="FunctionPointer" parent="SceneBase/XROrigin3D/RightHand" instance=ExtResource("5_s5a1j")]
+laser_material = SubResource("StandardMaterial3D_r0gfo")
+show_target = true
+target_radius = 0.002
+collide_with_areas = true
+suppress_mask = 0
+
+[node name="Poke" type="Node3D" parent="SceneBase/XROrigin3D/RightHand"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.250876)
+script = ExtResource("14_a4qhn")
+stiffness = 1.0
+
+[node name="PokeBody" type="AnimatableBody3D" parent="SceneBase/XROrigin3D/RightHand/Poke"]
+top_level = true
+collision_layer = 131072
+collision_mask = 4259839
+sync_to_physics = false
+script = ExtResource("15_3uwvt")
+stiffness = 1.0
+
+[node name="CollisionShape" type="CollisionShape3D" parent="SceneBase/XROrigin3D/RightHand/Poke/PokeBody"]
+shape = SubResource("SphereShape3D_g1sig")
+
+[node name="MeshInstance" type="MeshInstance3D" parent="SceneBase/XROrigin3D/RightHand/Poke/PokeBody"]
+mesh = SubResource("SphereMesh_clk8w")
+surface_material_override/0 = SubResource("StandardMaterial3D_1dcta")
+
+[node name="Rumbler" type="Node" parent="SceneBase/XROrigin3D/RightHand/Poke"]
+script = ExtResource("16_tblev")
+event = ExtResource("17_irhf2")
+
+[node name="PlayerBody" parent="SceneBase/XROrigin3D" instance=ExtResource("5_l5pvh")]
+player_calibrate_height = false
+
+[node name="betterhand" type="Node3D" parent="SceneBase/XROrigin3D"]
+script = SubResource("GDScript_2rbgm")
+
+[node name="betterhand2" type="Node3D" parent="SceneBase/XROrigin3D"]
+script = SubResource("GDScript_7bouk")
+hand = 1
+
+[node name="Viewport2Din3D" parent="." instance=ExtResource("7_nyrov")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.412089, 1.20249, -5.12917)
+scene = ExtResource("12_n40ba")
+viewport_size = Vector2(1920, 1080)
+unshaded = true
+
+[node name="Viewport2Din3D2" parent="." instance=ExtResource("7_nyrov")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.43454, 1.20249, -5.12917)
+scene = ExtResource("14_3wkbb")
+viewport_size = Vector2(430, 430)
+unshaded = true
+scene_properties_keys = PackedStringArray("user_settings_ui.gd")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 1.20604, -1.81361)
+visible = false
+material_override = SubResource("StandardMaterial3D_bj6vv")
+mesh = SubResource("ArrayMesh_lp7pj")
+skeleton = NodePath("../StaticBody3D/MeshInstance3D")
+script = SubResource("GDScript_ru2kx")
+
+[node name="sao_button" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.16712, -1.1544)
+script = SubResource("GDScript_wmde1")
+
+[node name="button" type="RigidBody3D" parent="sao_button"]
+transform = Transform3D(-0.99751, 0, -0.0705225, 0, 1, 0, 0.0705225, 0, -0.99751, 0, 0, 0)
+collision_layer = 5242881
+axis_lock_linear_x = true
+axis_lock_linear_y = true
+axis_lock_angular_x = true
+axis_lock_angular_y = true
+axis_lock_angular_z = true
+lock_rotation = true
+freeze_mode = 1
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="sao_button/button"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 7.45058e-09, 0, -0.00364733)
+material_override = SubResource("StandardMaterial3D_yoede")
+mesh = SubResource("ArrayMesh_76kq8")
+skeleton = NodePath("../../MeshInstance3D")
+script = SubResource("GDScript_2dhkq")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="sao_button/button"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 7.45058e-09, 0, -0.00364733)
+shape = SubResource("CylinderShape3D_qefun")
+
+[node name="MeshInstance3D" parent="sao_button" instance=ExtResource("1_apqpr")]
+transform = Transform3D(-0.99751, -0.0705225, 3.08264e-09, 0, -4.37114e-08, -1, 0.0705225, -0.99751, 4.36026e-08, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_1r4dh")
+mesh = SubResource("ArrayMesh_0jijv")
+skeleton = NodePath("../..")
+radius = 0.023
+radiuss = 0.025
+
+[node name="StaticBody3D" type="StaticBody3D" parent="sao_button"]
+
+[node name="JoltSliderJoint3D" type="JoltSliderJoint3D" parent="sao_button"]
+limit_enabled = true
+limit_upper = 0.002
+node_a = NodePath("../StaticBody3D")
+node_b = NodePath("../button")
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+
+[connection signal="pointing_event" from="SceneBase/XROrigin3D/RightHand/Poke" to="SceneBase/XROrigin3D/RightHand/Poke/Rumbler" method="rumble_pointer"]
+[connection signal="body_contact_end" from="SceneBase/XROrigin3D/RightHand/Poke/PokeBody" to="SceneBase/XROrigin3D/RightHand/Poke" method="_on_PokeBody_body_contact_end"]
+[connection signal="body_contact_start" from="SceneBase/XROrigin3D/RightHand/Poke/PokeBody" to="SceneBase/XROrigin3D/RightHand/Poke" method="_on_PokeBody_body_contact_start"]

@@ -1,0 +1,21 @@
+.{
+    .name = "godot-zig-template",
+    .version = "0.0.0",
+    .minimum_zig_version = "0.12.0",
+    .dependencies = .{
+        .godot = .{
+            .url = "https://github.com/silversquirl/godot-zig/archive/ae98399b8d029102645f136e81079a8dd16d5260.tar.gz",
+            .hash = "1220fc5eaff45d119f2b9c118cd9f593a96e85777a50ba875eb14b698aa2b4fb9181",
+        },
+        .zware = .{
+            .url = "https://github.com/malcolmstill/zware/archive/5ec4d1cd97cd41b1ba165e6c7897bdf2a86f359c.tar.gz",
+            .hash = "1220df1420238197d801591d91063dcfd16f83bbea3d260e2300c1a805e55dcdf622",
+        },
+    },
+    .paths = .{""},
+}
+//lib.root_module.addImport("zware", zware_dep.module("zware"));
+// const zware_dep = b.dependency("zware", .{
+//         .target = target,
+//         .optimize = optimize,
+//     });

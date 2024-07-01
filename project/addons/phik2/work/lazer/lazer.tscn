@@ -1,0 +1,295 @@
+[gd_scene load_steps=11 format=4 uid="uid://deew6wscu2d3t"]
+
+[ext_resource type="Shader" uid="uid://c2c7sknvw28nm" path="res://addons/phik2/work/lazer/shader/line_glow.tres" id="1_q1mi4"]
+[ext_resource type="Shader" uid="uid://b30ymq33klw13" path="res://addons/assets/shaders/dissolve.tres" id="2_0iu0i"]
+[ext_resource type="Shader" path="res://addons/assets/shaders/ObjectSpaceDissolveWithDirection.gdshader" id="3_w270a"]
+
+[sub_resource type="GDScript" id="GDScript_xp7xj"]
+resource_name = "laser"
+script/source = "@tool
+extends Node3D
+
+
+## laser vars 
+var immediate_canvas : ImmediateMesh = null
+var render_mode = Mesh.PRIMITIVE_TRIANGLES
+var uv_scale = 1.0
+var _sf = SurfaceTool.new()
+#var _is = ImmediateSurface.new()
+## end
+
+
+@export var uv_size = 1.0 : set = set_uv_size # (float,0.0,100.0)
+@export var material: Material = null : set = set_material
+
+#var _linegen = LineGen3D.new()
+
+@export var points = PackedVector3Array([Vector3(0, 0, 0), Vector3(0, 0, 3)]):set = set_points 
+var target := Vector3(0,0,0)
+
+func set_points(val):
+	points = val
+	redraw()
+
+func add_point(point : Vector3):
+	points.push_back(point)
+	redraw()
+
+func clear_points():
+	points.clear()
+
+func get_point_count() -> int:
+	return points.size()
+
+func get_point(i : int) -> Vector3:
+	return points[i]
+
+func remove_point(i : int):
+	points.remove(i)
+	redraw()
+
+func set_point_position(i : int, v : Vector3):
+	points[i] = v
+	redraw()
+
+
+func set_uv_size(value):
+	uv_size = value
+	redraw()
+
+var _mesh_instance = MeshInstance3D.new()
+func set_material(mat):
+	if mat == null:
+		material = load(\"res://addons/phik2/work/lazer/default_line_material.tres\").duplicate(true)
+	if mat is ShaderMaterial:
+		material = mat
+	_mesh_instance.material_override = material
+
+
+
+func _enter_tree():
+	add_child(_mesh_instance)
+	
+	set_uv_size(uv_size)
+	set_material(material)
+	
+	redraw()
+	print(points[1])
+
+func _draw():
+	_mesh_instance.mesh = draw_from_points_strip(points)
+
+func redraw():
+	_draw()
+
+
+func draw_from_points_strip(p : PackedVector3Array = PackedVector3Array(),
+					line_length : float = 1.0
+					) -> ArrayMesh:
+	_sf.begin(Mesh.PRIMITIVE_TRIANGLE_STRIP)
+	
+	var last = Vector3(0,0,0)
+	var last_miter = null
+	
+	var ps = p.size()
+	if ps < 2: return ArrayMesh.new()
+	
+	
+	var acc = 0.0
+	var last_dist = p[0].distance_squared_to(p[1])
+	for i in range(ps-1):
+		var cur_dist =p[i].distance_squared_to(p[i+1])
+		acc += lerp(cur_dist,last_dist,0.2)
+#	print(acc)
+	acc = sqrt(acc)
+	var ll = acc
+#	line_length = ll
+	
+	var inv_ps = 1.0/(ps-1)
+	
+	for i in range(ps+2):
+		var real_i = i
+		if i > 0: i -= 1
+		if i > ps-1: i -= 1
+		var p1 = p[i]
+		
+		if p1 != null:
+			if i < ps-1:
+				last = p[i+1] - p1
+			
+			var dir = last
+			if last_miter and i > 0 and i < ps-1:
+				dir = last_miter
+			
+#			print(last_miter != null, \" \", i)
+			
+			# TODO: calculate total_length
+			var uv1x = 1.0-(inv_ps*(real_i-1)) 
+#			print(uv, \" \", i)
+			var extras_uv2 = Vector2(line_length, inv_ps)
+			
+			
+			_sf.set_normal( dir )
+			
+			_sf.set_uv( Vector2(uv1x,1.0) )
+			_sf.set_uv2( extras_uv2 )
+			_sf.add_vertex( p1 )
+			
+			_sf.set_normal( dir )
+			
+			_sf.set_uv( Vector2(uv1x,0.0) )
+			_sf.set_uv2( extras_uv2 )
+			_sf.add_vertex( p1 )
+			
+			
+			if i < ps-2:
+				last_miter = p[i+2] - p1
+	
+	var compress = Mesh.ARRAY_FORMAT_VERTEX+Mesh.ARRAY_FORMAT_NORMAL+Mesh.ARRAY_FORMAT_COLOR+Mesh.ARRAY_FORMAT_TEX_UV+Mesh.ARRAY_FORMAT_TEX_UV2
+	
+	# If vertex count > 1024, the method we use
+	# to have rounded caps breaks
+	# because half-float precision is not precise enough
+	
+	# We've enabled full-precision float for UV here
+	# it's a waste of bits (uses 64 bits instead of 32) but it's a quick and easy fix,
+	# and it's not as bad as using the entire vec4 COLOR buffer just to store a single float
+#	compress -= Mesh.ARRAY_COMPRESS_TEX_UV
+	
+	return _sf.commit(null, compress)
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vv5tx"]
+render_priority = 0
+shader = ExtResource("1_q1mi4")
+shader_parameter/line_width = -0.09
+shader_parameter/glow_width = 0.095
+shader_parameter/tangent_facing = false
+shader_parameter/rounded = true
+shader_parameter/color = Color(1, 1, 1, 1)
+shader_parameter/glow_curve = 1.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_uk8x7"]
+render_priority = 0
+shader = ExtResource("2_0iu0i")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_js7fu"]
+_surfaces = [{
+"aabb": AABB(-0.002, 0, -0.00173205, 0.004, 3.57501, 0.0034641),
+"format": 34359742465,
+"index_count": 72,
+"index_data": PackedByteArray("AAABAAIAAAACAAMAAAADAAQAAAAEAAUAAAAFAAYAAAAGAAEADQAHAAgADQAIAAkADQAJAAoADQAKAAsADQALAAwADQAMAAcADAALAAIACwAKAAIACgADAAIAAwAKAAkAAwAJAAQACQAIAAQABAAIAAUACAAHAAUABQAHAAYABgAHAAwABgAMAAEAAQAMAAIA"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 14,
+"vertex_data": PackedByteArray("AAAAAM3MZEAAAAAAbxKDOs3MRED7BeM6bxKDus3MRED7BeM6bxIDu83MREB1k5AgbxKDus3MRED7BeO6bxKDOs3MRED7BeO6bxIDO83MREB1kxChbxIDOwAAAAB1kxChbxKDOgAAAAD7BeO6bxKDugAAAAD7BeO6bxIDuwAAAAB1k5AgbxKDugAAAAD7BeM6bxKDOgAAAAD7BeM6AAAAAAAAAAAAAAAA")
+}]
+
+[sub_resource type="GDScript" id="GDScript_d08hb"]
+script/source = "@tool
+extends MeshInstance3D
+#@export var excute_button: bool = false: set = _run
+
+@export var height = float(0): set = _run
+@export var radius = 0.002
+@export var top_height = 0.5
+@export var num_edges = 6
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	pass
+
+ 
+func _run(set_height):
+	height = set_height
+	print(\"test\")
+	#var test = Vector3(radius * cos(1 * TAU / 1),height,radius * sin(1 * TAU / 1)),
+	#print(test)
+	var arr_mesh = ArrayMesh.new()
+	var vertices := PackedVector3Array([
+	Vector3(0,top_height + height, 0),       # 0: Top center vertex
+	Vector3(radius * cos(1 * TAU / num_edges),height,radius * sin(1 * TAU / num_edges)),	# 1: Top edge vertex
+	Vector3(radius * cos(2 * TAU / num_edges),height,radius * sin(2 * TAU / num_edges)),	# 2: Top edge vertex
+	Vector3(radius * cos(3 * TAU / num_edges),height,radius * sin(3 * TAU / num_edges)),	# 3: Top edge vertex
+	Vector3(radius * cos(4 * TAU / num_edges),height,radius * sin(4 * TAU / num_edges)),	# 4: Top edge vertex
+	Vector3(radius * cos(5 * TAU / num_edges),height,radius * sin(5 * TAU / num_edges)),	# 5: Top edge vertex
+	Vector3(radius * cos(6 * TAU / num_edges),height,radius * sin(6 * TAU / num_edges)),	# 6: Top edge vertex
+	
+	
+	Vector3(radius * cos(6 * TAU / num_edges),0,radius * sin(6 * TAU / num_edges)),# 7: Bottom edge vertex
+	Vector3(radius * cos(5 * TAU / num_edges),0,radius * sin(5 * TAU / num_edges)),# 8: Bottom edge vertex
+	Vector3(radius * cos(4 * TAU / num_edges),0,radius * sin(4 * TAU / num_edges)),# 9: Bottom edge vertex
+	Vector3(radius * cos(3 * TAU / num_edges),0,radius * sin(3 * TAU / num_edges)),# 10: Bottom edge vertex
+	Vector3(radius * cos(2 * TAU / num_edges),0,radius * sin(2 * TAU / num_edges)),# 11: Bottom edge vertex
+	Vector3(radius * cos(1 * TAU / num_edges),0,radius * sin(1 * TAU / num_edges)),# 12: Bottom edge vertex
+	Vector3(0, 0, 0)# 13: Bottom center vertex
+])
+	print(vertices)
+	var indices := PackedInt32Array([
+		# Top face
+		0, 1, 2,
+		0, 2, 3,
+		0, 3, 4,
+		0, 4, 5,
+		0, 5, 6,
+		0, 6, 1,
+		
+		# Bottom face
+		13, 7, 8,
+		13, 8, 9,
+		13, 9, 10,
+		13, 10, 11,
+		13, 11, 12,
+		13, 12, 7,
+		
+		# Sides
+		12,11,2,
+		11,10,2,
+		10,3,2,
+		3,10,9,
+		3,9,4,
+		9,8,4,
+		4,8,5,
+		8,7,5,
+		5,7,6,
+		6,7,12,
+		6,12,1,
+		1,12,2
+	])
+	
+	
+	# Initialize the ArrayMesh.
+	var arrays = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_INDEX] = indices
+	
+	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	mesh = arr_mesh
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ahgy0"]
+render_priority = 0
+shader = ExtResource("3_w270a")
+shader_parameter/DissolveDirection = Vector3(0, -1, 0)
+shader_parameter/DissolveAmount = 0.49
+
+[sub_resource type="SphereMesh" id="SphereMesh_lbtbq"]
+
+[node name="lazer" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.472893, 0)
+script = SubResource("GDScript_xp7xj")
+material = SubResource("ShaderMaterial_vv5tx")
+points = PackedVector3Array(0, 0, 0, 0, 0, 1.95)
+
+[node name="Laser" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.26549, 0, 0)
+material_override = SubResource("ShaderMaterial_uk8x7")
+mesh = SubResource("ArrayMesh_js7fu")
+script = SubResource("GDScript_d08hb")
+height = 3.075
+top_height = 0.002
+
+[node name="test sphere" type="MeshInstance3D" parent="."]
+visible = false
+material_override = SubResource("ShaderMaterial_ahgy0")
+mesh = SubResource("SphereMesh_lbtbq")

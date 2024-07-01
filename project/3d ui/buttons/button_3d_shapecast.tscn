@@ -1,0 +1,82 @@
+[gd_scene load_steps=5 format=3 uid="uid://c1s6wpkt1hxc"]
+
+[ext_resource type="AudioStream" uid="uid://b8gjuof68067b" path="res://ui boop.ogg" id="1_y8j1p"]
+
+[sub_resource type="GDScript" id="GDScript_tpys6"]
+script/source = "## this is essentially an alternate version of a button look
+## at the comments in the torus button for more information
+extends Node3D
+
+@onready var mesh_instance_3d = $MeshInstance3D
+@onready var shape_cast_3d = $ShapeCast3D
+@onready var audio_stream_player_3d = $AudioStreamPlayer3D
+@onready var label_3d = $Label3D
+signal activated
+var is_activated:bool=false
+var target:float = 0.0
+
+@export var dist:float=0.025
+@export var staticlabeltext:String=\"shapecast\\ncube button\"
+@export var steps:float=1.0
+
+func _ready():
+	shape_cast_3d.target_position = Vector3(0,0,dist*2.0)
+	label_3d.text = staticlabeltext
+
+func _physics_process(delta):
+	target = shape_cast_3d.target_position.z
+	if shape_cast_3d.is_colliding():
+		target = to_local(shape_cast_3d.get_collision_point(0)).z
+	target = clamp(
+		remap(
+			target,
+			shape_cast_3d.target_position.z,
+			shape_cast_3d.target_position.z/2.0,
+			1.0,
+			0.0
+		),
+		0.0,
+		1.0
+	)
+	if steps > 0:
+		target = ceil(target*(steps))/(steps)
+	if target < shape_cast_3d.target_position.z/2.0:
+		if !is_activated:
+			activated.emit()
+			audio_stream_player_3d.play()
+		is_activated = true
+	elif target > shape_cast_3d.target_position.z/1.4:
+		is_activated = false
+	mesh_instance_3d.position.z = lerpf(
+		mesh_instance_3d.position.z,
+		lerpf(0.0,shape_cast_3d.target_position.z,target),
+		.3
+		)
+"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_x02lx"]
+size = Vector3(0.1, 0.1, 0.01)
+
+[sub_resource type="BoxMesh" id="BoxMesh_i5xwf"]
+size = Vector3(0.1, 0.1, 0.01)
+
+[node name="Button3D" type="Node3D"]
+script = SubResource("GDScript_tpys6")
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+text = "dist:"
+font_size = 6
+outline_size = 2
+
+[node name="ShapeCast3D" type="ShapeCast3D" parent="."]
+shape = SubResource("BoxShape3D_x02lx")
+target_position = Vector3(0, 0, 0)
+collision_mask = 2
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_i5xwf")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("1_y8j1p")
+max_polyphony = 32

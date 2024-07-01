@@ -1,0 +1,107 @@
+[gd_scene load_steps=6 format=3 uid="uid://bh1u60378k6a"]
+
+[ext_resource type="PackedScene" uid="uid://cmfmxyhwom22i" path="res://addons/phik2/work/test/RigBot Spider.fbx" id="1_3pgov"]
+
+[sub_resource type="GDScript" id="GDScript_q5fa7"]
+script/source = "extends Skeleton3D
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	physical_bones_start_simulation()
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	pass
+"
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_eohha"]
+radius = 0.0005
+height = 0.002
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rirno"]
+radius = 0.0005
+height = 0.001
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_m1pxt"]
+radius = 0.0005
+height = 0.003
+
+[node name="Root Scene" instance=ExtResource("1_3pgov")]
+
+[node name="Skeleton3D" parent="RootNode/RigBot by GearBell" index="0"]
+bones/0/position = Vector3(5.32907e-17, -0.000214949, 0.00957312)
+bones/0/rotation = Quaternion(0.705885, 8.4439e-08, 8.41478e-08, 0.708326)
+bones/54/position = Vector3(0.00114388, -0.000285837, 0.000149634)
+bones/54/rotation = Quaternion(0.357925, 0.829095, 0.429504, -0.0042293)
+bones/54/scale = Vector3(1, 1, 1)
+script = SubResource("GDScript_q5fa7")
+
+[node name="L1test" type="PhysicalBone3D" parent="RootNode/RigBot by GearBell/Skeleton3D" index="1"]
+transform = Transform3D(-0.00734295, 0.00617566, 0.00281822, -0.00334023, -0.00690127, 0.00641992, 0.00590965, 0.00377276, 0.00713038, 0.00114415, -0.000365878, 0.0092911)
+visible = false
+axis_lock_angular_x = true
+axis_lock_angular_y = true
+axis_lock_angular_z = true
+joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.000185468, -0.000162566, -0.000223121)
+body_offset = Transform3D(0.00999722, -0.000207366, 0.000111901, 0.000209268, 0.00999634, -0.000171477, -0.000108304, 0.000173771, 0.00999789, 1.84542e-06, 1.62562e-06, 2.2389e-06)
+mass = 0.01
+gravity_scale = 0.0
+bone_name = "spider leg L"
+
+[node name="JoltGeneric6DOFJoint3D" type="JoltGeneric6DOFJoint3D" parent="RootNode/RigBot by GearBell/Skeleton3D/L1test" index="0"]
+angular_limit_x/enabled = false
+angular_limit_y/enabled = false
+angular_limit_z/enabled = false
+node_a = NodePath("..")
+node_b = NodePath("../PhysicalBone3D")
+exclude_nodes_from_collision = false
+transform = Transform3D(-0.739099, 0.607418, 0.291162, -0.323267, -0.699074, 0.637804, 0.590957, 0.377277, 0.713044, -1.75089e-07, 0.00589818, -1.68104e-07)
+visible = false
+
+[node name="PhysicalBone3D" type="PhysicalBone3D" parent="RootNode/RigBot by GearBell/Skeleton3D/L1test" index="1"]
+transform = Transform3D(0.871893, -0.4291, 0.236179, 0.00229913, 0.48582, 0.874091, -0.489677, -0.761728, 0.42458, -6.74278e-07, 0.00589857, -7.83708e-07)
+joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.81684e-05, 1.2314e-05, -1.06649e-05)
+body_offset = Transform3D(0.999996, -0.0113029, -0.00892459, 0.0112917, 1.00024, -0.00253966, 0.00897977, 0.00233212, 1.00011, -7.81241e-05, -1.32266e-05, 9.93535e-06)
+bone_name = "spider leg L.001"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RootNode/RigBot by GearBell/Skeleton3D/L1test/PhysicalBone3D" index="0"]
+transform = Transform3D(1, -5.96046e-08, -5.96046e-08, 0, 1, -5.96046e-08, 1.49012e-08, -2.98023e-08, 1, 0, 0, 0)
+shape = SubResource("CapsuleShape3D_eohha")
+
+[node name="hip_rigid" type="RigidBody3D" parent="RootNode/RigBot by GearBell/Skeleton3D" index="2"]
+transform = Transform3D(1, -1.90735e-08, 2.28882e-07, 2.47955e-07, 0.00345138, -0.999994, -3.8147e-08, 0.999994, 0.00345138, -1.49012e-10, -0.000214949, 0.00957312)
+visible = false
+freeze = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RootNode/RigBot by GearBell/Skeleton3D/hip_rigid" index="0"]
+shape = SubResource("CapsuleShape3D_rirno")
+
+[node name="hip" type="BoneAttachment3D" parent="RootNode/RigBot by GearBell/Skeleton3D/hip_rigid" index="1"]
+transform = Transform3D(1, 1.90738e-08, 9.53655e-09, 3.72906e-08, 1, 2.63099e-08, 9.6672e-09, -2.58442e-08, 1, 1.49012e-10, -1.86265e-09, 5.82077e-11)
+bone_name = "Hips"
+bone_idx = 0
+override_pose = true
+use_external_skeleton = true
+external_skeleton = NodePath("../..")
+
+[node name="JoltGeneric6DOFJoint3D" type="JoltGeneric6DOFJoint3D" parent="RootNode/RigBot by GearBell/Skeleton3D" index="3"]
+node_a = NodePath("../hip_rigid")
+node_b = NodePath("../L_Rigid")
+transform = Transform3D(-0.7391, 0.607418, 0.291162, -0.323267, -0.699074, 0.637804, 0.590957, 0.377277, 0.713044, 0.00114388, -0.000365569, 0.0092878)
+
+[node name="L_Rigid" type="RigidBody3D" parent="RootNode/RigBot by GearBell/Skeleton3D" index="4"]
+transform = Transform3D(-0.7391, 0.607418, 0.291162, -0.323267, -0.699074, 0.637804, 0.590957, 0.377277, 0.713044, 0.00114388, -0.000365567, 0.0092878)
+visible = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RootNode/RigBot by GearBell/Skeleton3D/L_Rigid" index="0"]
+shape = SubResource("CapsuleShape3D_m1pxt")
+
+[node name="L" type="BoneAttachment3D" parent="RootNode/RigBot by GearBell/Skeleton3D/L_Rigid" index="1"]
+transform = Transform3D(0.999931, 0.0104398, -0.00546636, -0.0103921, 0.999909, 0.00866142, 0.00555623, -0.00860387, 0.999948, -9.31323e-10, -9.31323e-10, -3.72529e-09)
+bone_name = "spider leg L"
+bone_idx = 54
+override_pose = true
+use_external_skeleton = true
+external_skeleton = NodePath("../..")

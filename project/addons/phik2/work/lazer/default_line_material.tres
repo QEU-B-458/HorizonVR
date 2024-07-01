@@ -1,0 +1,13 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://lvwau67a4dxu"]
+
+[ext_resource type="Shader" uid="uid://c2c7sknvw28nm" path="res://addons/phik2/work/lazer/shader/line_glow.tres" id="1_wbc3q"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_wbc3q")
+shader_parameter/line_width = 0.0
+shader_parameter/glow_width = 0.0
+shader_parameter/tangent_facing = false
+shader_parameter/rounded = false
+shader_parameter/color = Color(0.98789, 0.465087, 0.386974, 1)
+shader_parameter/glow_curve = 0.016

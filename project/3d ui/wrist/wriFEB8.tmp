@@ -1,0 +1,111 @@
+[gd_scene load_steps=6 format=3 uid="uid://b6lc6k5xetr82"]
+
+[ext_resource type="AudioStream" uid="uid://qu5akyexp64r" path="res://addons/phik2/work/handtracking/ui boop.ogg" id="1_j7ug8"]
+
+[sub_resource type="GDScript" id="GDScript_tpys6"]
+script/source = "## this is a superset of the button_3d_shapecast for use testing wrist
+## mounted buttons look at the torus button comments for more information
+extends Node3D
+
+@onready var mesh_instance_3d = $MeshInstance3D
+@onready var shape_cast_3d = $ShapeCast3D
+@onready var audio_stream_player_3d = $AudioStreamPlayer3D
+@onready var label_3d = $Label3D
+signal activated
+var is_activated:bool=false
+var target:float = 0.0
+var hand:int = 0
+
+@export var dist:float=0.025
+@export var staticlabeltext:String=\"shapecast\\ncube button\"
+@export var steps:float=1.0
+
+func _ready():
+	if hand == 0:
+		shape_cast_3d.collision_mask=32
+	elif hand == 1:
+		shape_cast_3d.collision_mask=16
+	shape_cast_3d.target_position = Vector3(0,0,dist*2.0)
+	label_3d.text = staticlabeltext
+
+func _physics_process(delta):
+	target = shape_cast_3d.target_position.z
+	if shape_cast_3d.is_colliding():
+		target = to_local(shape_cast_3d.get_collision_point(0)).z
+	target = clamp(
+		remap(
+			target,
+			shape_cast_3d.target_position.z,
+			shape_cast_3d.target_position.z/2.0,
+			1.0,
+			0.0
+		),
+		0.0,
+		1.0
+	)
+	if steps > 0:
+		target = ceil(target*(steps))/(steps)
+	if target < shape_cast_3d.target_position.z/2.0:
+		if !is_activated:
+			activated.emit()
+			audio_stream_player_3d.play()
+		is_activated = true
+	elif target > shape_cast_3d.target_position.z/1.2:
+		is_activated = false
+	mesh_instance_3d.position.z = lerpf(
+		mesh_instance_3d.position.z,
+		lerpf(0.0,shape_cast_3d.target_position.z,target),
+		.3
+		)
+"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_x02lx"]
+size = Vector3(0.05, 0.05, 0.01)
+
+[sub_resource type="BoxMesh" id="BoxMesh_i5xwf"]
+size = Vector3(0.02, 0.02, 0.01)
+
+[sub_resource type="GDScript" id="GDScript_6wwhq"]
+script/source = "extends Node3D
+
+@onready var button_3d = $\"../\"
+@onready var rigid_body_3d = $RigidBody3D
+
+var state := 0;
+
+func _ready():
+	#button_3d.activated.connect(func():
+		#var tmp = load(\"res://assets/maxwell.tscn\").instantiate()
+		#get_tree().root.add_child(tmp)
+		#tmp.scale *= .5
+		#tmp.global_position = global_position
+		#)
+	pass
+"
+
+[node name="Button3D" type="Node3D"]
+transform = Transform3D(-1, -8.74228e-08, 3.82137e-15, 0, -4.37114e-08, -1, 8.74228e-08, -1, 4.37114e-08, 0, -0.0188501, 0.0709449)
+script = SubResource("GDScript_tpys6")
+dist = 0.01
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+text = "dist:"
+font_size = 6
+outline_size = 2
+
+[node name="ShapeCast3D" type="ShapeCast3D" parent="."]
+shape = SubResource("BoxShape3D_x02lx")
+target_position = Vector3(0, 0, 0)
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_i5xwf")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("1_j7ug8")
+max_polyphony = 32
+
+[node name="spawn a thing" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+script = SubResource("GDScript_6wwhq")
