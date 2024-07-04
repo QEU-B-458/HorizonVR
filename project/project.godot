@@ -35,6 +35,10 @@ window/vsync/vsync_mode=0
 
 enabled=PackedStringArray("res://addons/Godot-MToon-Shader/plugin.cfg", "res://addons/godot-xr-tools/plugin.cfg", "res://addons/jigglebones/plugin.cfg", "res://addons/simplenote/plugin.cfg")
 
+[filesystem]
+
+import/blender/enabled=false
+
 [input]
 
 cam_switch={
